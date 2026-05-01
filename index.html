@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Dossiê — Desafio CPP Mai/2026 · Inteligência de 78 leads</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 <style>
 :root{
   --bg:#0a0a0a;
@@ -204,6 +206,24 @@ section{padding:48px 0 12px}
   .block dt{padding-top:8px}
 }
 
+/* CHARTS */
+.charts-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px;margin-bottom:30px}
+.chart-card{
+  background:var(--bg-2);border:1px solid var(--line);border-radius:14px;
+  padding:18px 20px;
+  display:flex;flex-direction:column;gap:14px;
+}
+.chart-card.chart-wide{grid-column:span 2}
+.chart-head h3{margin:0 0 4px;font-size:14px;font-weight:700;color:var(--txt);letter-spacing:-0.2px}
+.chart-head .chart-sub{font-size:11px;color:var(--txt-3);letter-spacing:0.3px}
+.chart-canvas{position:relative;height:240px;width:100%}
+.chart-canvas.chart-tall{height:340px}
+.chart-canvas canvas{max-width:100%}
+
+@media(max-width:980px){
+  .chart-card.chart-wide{grid-column:span 1}
+}
+
 /* PRINT */
 @media print{
   body{background:#fff;color:#000}
@@ -240,6 +260,7 @@ section{padding:48px 0 12px}
   <div class="breadcrumb">Dossiê CPP · Maio 2026</div>
   <div>
     <a href="#painel" class="filter-btn">Painel executivo</a>
+    <a href="#visual" class="filter-btn">Gráficos</a>
     <a href="#top20" class="filter-btn">Top 20 alvos</a>
     <a href="#estrategia" class="filter-btn">Estratégia 4 dias</a>
     <a href="#fichas" class="filter-btn">78 fichas</a>
@@ -327,6 +348,79 @@ section{padding:48px 0 12px}
         <li><strong style="color:var(--gold-3)">Verde · Amarelo · Vermelho</strong> · alta · média · baixa confiança da identificação. Vermelho exige validação no WhatsApp antes do pitch</li>
         <li><strong style="color:var(--gold-3)">Cards</strong> · Cada ficha tem identidade, presença digital, sinais premium, dores prováveis, objeções esperadas, abordagem recomendada (tom para Patrick + Matheus) e gancho de pitch específico</li>
       </ul>
+    </div>
+  </div>
+</section>
+
+<section id="visual">
+  <div class="section-head">
+    <h2>Inteligência visual <small>distribuição, padrões, anomalias</small></h2>
+  </div>
+
+  <div class="charts-grid">
+    <div class="chart-card chart-wide">
+      <div class="chart-head"><h3>Histograma de score (propensão de compra)</h3><span class="chart-sub">10 buckets de 10 pontos · barra dourada = AAA (≥80)</span></div>
+      <div class="chart-canvas"><canvas id="ch-hist"></canvas></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-head"><h3>Perfil CPP</h3><span class="chart-sub">arquétipos do funil</span></div>
+      <div class="chart-canvas"><canvas id="ch-perfil"></canvas></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-head"><h3>Buckets de prioridade</h3><span class="chart-sub">AAA / AA / A / B / C</span></div>
+      <div class="chart-canvas"><canvas id="ch-buckets"></canvas></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-head"><h3>Confiança de identidade</h3><span class="chart-sub">verde = pode pitchar direto</span></div>
+      <div class="chart-canvas"><canvas id="ch-verif"></canvas></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-head"><h3>Clínica própria</h3><span class="chart-sub">tem estrutura física?</span></div>
+      <div class="chart-canvas"><canvas id="ch-clinica"></canvas></div>
+    </div>
+
+    <div class="chart-card chart-wide">
+      <div class="chart-head"><h3>Top 10 estados</h3><span class="chart-sub">distribuição geográfica das vendas</span></div>
+      <div class="chart-canvas chart-tall"><canvas id="ch-estados"></canvas></div>
+    </div>
+
+    <div class="chart-card chart-wide">
+      <div class="chart-head"><h3>Top 10 especialidades</h3><span class="chart-sub">ortopedia domina o mercado CPP</span></div>
+      <div class="chart-canvas chart-tall"><canvas id="ch-esp"></canvas></div>
+    </div>
+
+    <div class="chart-card chart-wide">
+      <div class="chart-head"><h3>Vendas por dia</h3><span class="chart-sub">timeline da Sala Secreta · 04/04 a 01/05</span></div>
+      <div class="chart-canvas"><canvas id="ch-timeline"></canvas></div>
+    </div>
+
+    <div class="chart-card chart-wide">
+      <div class="chart-head"><h3>Perfil CPP × Ciclo profissional</h3><span class="chart-sub">empilhado · onde estão Águias e Gaviões</span></div>
+      <div class="chart-canvas"><canvas id="ch-stack"></canvas></div>
+    </div>
+
+    <div class="chart-card chart-wide">
+      <div class="chart-head"><h3>Score breakdown médio por perfil</h3><span class="chart-sub">radar · quem pontua em quê</span></div>
+      <div class="chart-canvas chart-tall"><canvas id="ch-radar"></canvas></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-head"><h3>Método de pagamento</h3><span class="chart-sub">PIX vs cartão</span></div>
+      <div class="chart-canvas"><canvas id="ch-pgto"></canvas></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-head"><h3>Parcelas no cartão</h3><span class="chart-sub">12x = sinal de aperto de caixa</span></div>
+      <div class="chart-canvas"><canvas id="ch-parcelas"></canvas></div>
+    </div>
+
+    <div class="chart-card chart-wide">
+      <div class="chart-head"><h3>Score × Confiança de identidade</h3><span class="chart-sub">scatter · cada ponto é um médico (cor = perfil)</span></div>
+      <div class="chart-canvas chart-tall"><canvas id="ch-scatter"></canvas></div>
     </div>
   </div>
 </section>
@@ -8464,6 +8558,306 @@ section{padding:48px 0 12px}
     });
   }
 })();
+
+// ====================== CHARTS ======================
+const CD = {"hist_labels": ["0–9", "10–19", "20–29", "30–39", "40–49", "50–59", "60–69", "70–79", "80–89", "90–99"], "hist_data": [0, 0, 3, 11, 7, 2, 9, 28, 16, 2], "perfis": ["AGUIA", "GAVIAO", "URUBU", "PATO", "INCERTO"], "perfis_lbl": ["Águia", "Gavião", "Urubu", "Pato", "Incerto"], "perfil_count": [26, 24, 18, 10, 0], "ciclos_ordem": ["Recente", "Estabilizado", "Sênior", "TOP", "Indeterminado"], "perfil_x_ciclo": {"AGUIA": [1, 9, 14, 2, 0], "GAVIAO": [2, 14, 4, 3, 1], "URUBU": [3, 8, 1, 1, 5], "PATO": [8, 0, 0, 0, 2], "INCERTO": [0, 0, 0, 0, 0]}, "breakdown_por_perfil": {"AGUIA": {"estrutura": 33.7, "engajamento": 14.3, "fome_crescimento": 14.5, "capacidade_pagar": 16.7}, "GAVIAO": {"estrutura": 28.6, "engajamento": 12.0, "fome_crescimento": 16.9, "capacidade_pagar": 15.3}, "URUBU": {"estrutura": 17.8, "engajamento": 8.7, "fome_crescimento": 13.1, "capacidade_pagar": 11.8}, "PATO": {"estrutura": 8.2, "engajamento": 4.4, "fome_crescimento": 15.5, "capacidade_pagar": 7.4}, "INCERTO": {"estrutura": 0, "engajamento": 0, "fome_crescimento": 0, "capacidade_pagar": 0}}, "vendas_dias": [{"x": "2026-04-04", "y": 1}, {"x": "2026-04-12", "y": 3}, {"x": "2026-04-14", "y": 1}, {"x": "2026-04-15", "y": 2}, {"x": "2026-04-16", "y": 1}, {"x": "2026-04-17", "y": 5}, {"x": "2026-04-18", "y": 3}, {"x": "2026-04-19", "y": 10}, {"x": "2026-04-20", "y": 6}, {"x": "2026-04-21", "y": 6}, {"x": "2026-04-22", "y": 5}, {"x": "2026-04-23", "y": 2}, {"x": "2026-04-24", "y": 6}, {"x": "2026-04-25", "y": 6}, {"x": "2026-04-26", "y": 4}, {"x": "2026-04-27", "y": 6}, {"x": "2026-04-28", "y": 3}, {"x": "2026-04-29", "y": 5}, {"x": "2026-04-30", "y": 2}, {"x": "2026-05-01", "y": 1}], "esp_top": [{"label": "Ortopedia", "value": 26}, {"label": "Não identificada", "value": 17}, {"label": "Cirurgia Geral", "value": 7}, {"label": "Ginecologia", "value": 4}, {"label": "Urologia", "value": 4}, {"label": "Neurocirurgia", "value": 4}, {"label": "Cirurgia Vascular", "value": 4}, {"label": "Otorrinolaringologia", "value": 3}, {"label": "Transplante Capilar", "value": 2}, {"label": "Dermatologia", "value": 1}], "estados_top": [{"label": "SP", "value": 17}, {"label": "PR", "value": 7}, {"label": "SC", "value": 5}, {"label": "CE", "value": 4}, {"label": "RS", "value": 4}, {"label": "GO", "value": 4}, {"label": "MG", "value": 3}, {"label": "ES", "value": 3}, {"label": "MT", "value": 3}, {"label": "MS", "value": 2}], "buckets_lbl": ["AAA", "AA", "A", "B", "C"], "buckets_data": [18, 33, 6, 15, 6], "verif_ordem": ["Alta", "Média", "Baixa", "Incerto"], "verif_data": [58, 5, 15, 0], "clinica_data": [41, 17, 20], "scatter": [{"x": 1, "y": 30, "label": "Marco Antonio Silva (não confi", "perfil": "URUBU", "id": 1}, {"x": 3, "y": 78, "label": "André Silva Nóbrega", "perfil": "AGUIA", "id": 2}, {"x": 3, "y": 65, "label": "André Fonseca dos Reis", "perfil": "GAVIAO", "id": 3}, {"x": 3, "y": 48, "label": "Felipe de Bulhões Ojeda (també", "perfil": "URUBU", "id": 4}, {"x": 3, "y": 82, "label": "Thales Costa Bastos", "perfil": "AGUIA", "id": 5}, {"x": 3, "y": 80, "label": "Rafael Ratti Fenato", "perfil": "AGUIA", "id": 6}, {"x": 2, "y": 35, "label": "Lucas Andrade (provável Lucas ", "perfil": "URUBU", "id": 7}, {"x": 3, "y": 70, "label": "Danilo da Silva Lobo", "perfil": "GAVIAO", "id": 8}, {"x": 3, "y": 75, "label": "Claudia Rocha Coppoli", "perfil": "AGUIA", "id": 9}, {"x": 2, "y": 45, "label": "Júlio Fran da Silva Pinto", "perfil": "URUBU", "id": 10}, {"x": 3, "y": 72, "label": "Heitor Munhoz Pereira", "perfil": "GAVIAO", "id": 11}, {"x": 3, "y": 78, "label": "Isaac Massaud Amim Amaral", "perfil": "URUBU", "id": 12}, {"x": 2, "y": 38, "label": "Ualas Teixeira Hermidorff", "perfil": "PATO", "id": 13}, {"x": 3, "y": 81, "label": "Felipe Hofmann Barbeta", "perfil": "AGUIA", "id": 14}, {"x": 3, "y": 62, "label": "Daniela Lima da Costa", "perfil": "GAVIAO", "id": 15}, {"x": 1, "y": 32, "label": "Victor Hugo Ruis da Costa (não", "perfil": "PATO", "id": 16}, {"x": 3, "y": 84, "label": "Alander Sobreira Vanderlei", "perfil": "AGUIA", "id": 17}, {"x": 2, "y": 44, "label": "Juliana Goebel Pillon (prováve", "perfil": "PATO", "id": 18}, {"x": 3, "y": 48, "label": "Luiz Farion", "perfil": "URUBU", "id": 19}, {"x": 3, "y": 76, "label": "Rafael Pontes Ribeiro", "perfil": "AGUIA", "id": 20}, {"x": 3, "y": 64, "label": "Luiz Patrial Netto", "perfil": "URUBU", "id": 21}, {"x": 3, "y": 38, "label": "Matheus Maciel Dornelles de Ca", "perfil": "PATO", "id": 22}, {"x": 3, "y": 86, "label": "Diego de Almeida Bandeira", "perfil": "AGUIA", "id": 23}, {"x": 1, "y": 28, "label": "Antonio Bezerra de Albuquerque", "perfil": "PATO", "id": 24}, {"x": 1, "y": 55, "label": "INCERTO - candidato forte: Eve", "perfil": "AGUIA", "id": 25}, {"x": 3, "y": 71, "label": "Marcos Augusto Shimiti de Oliv", "perfil": "GAVIAO", "id": 26}, {"x": 1, "y": 32, "label": "Rodrigo Damas (sobrenome unico", "perfil": "PATO", "id": 27}, {"x": 3, "y": 78, "label": "Breno Faria Tenrreiro", "perfil": "GAVIAO", "id": 28}, {"x": 3, "y": 56, "label": "Janaina Lenhardt", "perfil": "URUBU", "id": 29}, {"x": 3, "y": 84, "label": "Cesar Alberto Talavera Martell", "perfil": "AGUIA", "id": 30}, {"x": 3, "y": 78, "label": "Thiago Jose Mari", "perfil": "GAVIAO", "id": 31}, {"x": 1, "y": 38, "label": "Julyanna Araujo de Jesus Garze", "perfil": "URUBU", "id": 32}, {"x": 1, "y": 35, "label": "Antonio Carlos Faloni (provave", "perfil": "URUBU", "id": 33}, {"x": 3, "y": 64, "label": "Luiz Heineck de Souza", "perfil": "GAVIAO", "id": 34}, {"x": 3, "y": 68, "label": "Raphael Lahr Vasconcellos Samp", "perfil": "GAVIAO", "id": 35}, {"x": 3, "y": 76, "label": "Priscila Terra Cruz", "perfil": "AGUIA", "id": 36}, {"x": 3, "y": 84, "label": "Marina Marangon Melhado", "perfil": "AGUIA", "id": 37}, {"x": 3, "y": 66, "label": "Henrique de Figueiredo Biaggio", "perfil": "GAVIAO", "id": 38}, {"x": 3, "y": 81, "label": "Lucas David Campos", "perfil": "AGUIA", "id": 39}, {"x": 3, "y": 79, "label": "Vinicius A. Lima (provavel nom", "perfil": "AGUIA", "id": 40}, {"x": 3, "y": 62, "label": "Dr. Ronilton Silva de Sousa", "perfil": "URUBU", "id": 41}, {"x": 3, "y": 78, "label": "Dra. Marianna Monteiro Vaz da ", "perfil": "GAVIAO", "id": 42}, {"x": 3, "y": 84, "label": "Dr. Rafael Bozzo Tacino", "perfil": "AGUIA", "id": 43}, {"x": 3, "y": 65, "label": "Dr. Leonardo Mendes Faria", "perfil": "URUBU", "id": 44}, {"x": 1, "y": 38, "label": "Dra. Natalia Tobal (provavel)", "perfil": "PATO", "id": 45}, {"x": 3, "y": 76, "label": "Dr. Alfredo Mendes Steffen", "perfil": "GAVIAO", "id": 46}, {"x": 3, "y": 72, "label": "Dr. Ildo Valter Golff Filho", "perfil": "GAVIAO", "id": 47}, {"x": 1, "y": 42, "label": "Dra. Barbara Dantas Marques Ol", "perfil": "PATO", "id": 48}, {"x": 3, "y": 80, "label": "Dr. Gustavo Morais da Silva", "perfil": "GAVIAO", "id": 49}, {"x": 3, "y": 73, "label": "Dra. Lilian Martins Lacerda Mo", "perfil": "AGUIA", "id": 50}, {"x": 1, "y": 28, "label": "Miguel Paiva Neto (NÃO CONFIRM", "perfil": "URUBU", "id": 51}, {"x": 3, "y": 76, "label": "Dr. Wagner Wanderley Costa", "perfil": "GAVIAO", "id": 52}, {"x": 3, "y": 82, "label": "Dr. Guilherme Ricci", "perfil": "AGUIA", "id": 53}, {"x": 3, "y": 70, "label": "Dr. Ericsson Reinaldo Pires", "perfil": "GAVIAO", "id": 54}, {"x": 3, "y": 78, "label": "Dr. Daniel Fiim (provável nome", "perfil": "GAVIAO", "id": 55}, {"x": 3, "y": 38, "label": "Dr. Thiago Beltrame Rhoden", "perfil": "PATO", "id": 56}, {"x": 3, "y": 80, "label": "Dr. Ibrahim Massuqueto Andrade", "perfil": "AGUIA", "id": 57}, {"x": 3, "y": 72, "label": "Dr. Benício de Oliveira Júnior", "perfil": "AGUIA", "id": 58}, {"x": 3, "y": 75, "label": "Dra. Ana Lucia Mello de Carval", "perfil": "AGUIA", "id": 59}, {"x": 3, "y": 72, "label": "Dr. Guilherme Santiago da Cunh", "perfil": "GAVIAO", "id": 60}, {"x": 3, "y": 78, "label": "Leonardo Passos Silva", "perfil": "GAVIAO", "id": 61}, {"x": 3, "y": 72, "label": "Ocilmar Dias do Amaral Junior", "perfil": "GAVIAO", "id": 62}, {"x": 3, "y": 70, "label": "Carlos De Nigris Gonzalez", "perfil": "URUBU", "id": 63}, {"x": 2, "y": 72, "label": "Paulo Roberto Marques Junior", "perfil": "AGUIA", "id": 64}, {"x": 1, "y": 75, "label": "Daniel Francisco Mello (1a hip", "perfil": "AGUIA", "id": 65}, {"x": 3, "y": 80, "label": "Dr. James Rocha Tavares", "perfil": "AGUIA", "id": 66}, {"x": 3, "y": 78, "label": "Tarik Soares Suleiman", "perfil": "GAVIAO", "id": 67}, {"x": 3, "y": 82, "label": "Dr. Eduardo Watanabe Castanhei", "perfil": "AGUIA", "id": 68}, {"x": 3, "y": 84, "label": "Dr. Bruno Nanni Alexandrino", "perfil": "AGUIA", "id": 69}, {"x": 3, "y": 70, "label": "Dr. Fabio Samsonowski Ulbrich", "perfil": "URUBU", "id": 70}, {"x": 3, "y": 42, "label": "Gustavo Francisco Vasconcelos ", "perfil": "URUBU", "id": 71}, {"x": 3, "y": 100, "label": "Mario Cezar da Motta", "perfil": "GAVIAO", "id": 72}, {"x": 3, "y": 88, "label": "José Carlos Gaspar Junior", "perfil": "GAVIAO", "id": 73}, {"x": 1, "y": 25, "label": "Dhony França Andrade (incerto ", "perfil": "PATO", "id": 74}, {"x": 1, "y": 45, "label": "Eugênio Ferreira da Costa (ver", "perfil": "URUBU", "id": 75}, {"x": 3, "y": 100, "label": "Silvio Leite de Macedo Neto", "perfil": "AGUIA", "id": 76}, {"x": 1, "y": 35, "label": "Vanessa Monteiro (verificação ", "perfil": "GAVIAO", "id": 77}, {"x": 1, "y": 65, "label": "Victor Lucas Ferreira Corres (", "perfil": "URUBU", "id": 78}], "pagamento": [{"label": "PIX", "value": 53}, {"label": "CartaoDeCredito", "value": 23}, {"label": "SaldoHotmart+CREDIT_CARD", "value": 1}, {"label": "BoletoBancario", "value": 1}], "parcelas": [{"label": "1x", "value": 67}, {"label": "2x", "value": 2}, {"label": "5x", "value": 2}, {"label": "10x", "value": 1}, {"label": "12x", "value": 6}]};
+
+const COLORS = {
+  gold: '#D4AF37', gold2: '#B8860B', gold3: '#FFD86E',
+  copper: '#C97B4A', dark: '#3A3A3A', muted: '#6a6a6a',
+  green: '#3DDC84', amber: '#F4B400', red: '#E84545',
+  perfis: {
+    AGUIA: '#D4AF37',
+    GAVIAO: '#B8860B',
+    URUBU: '#C97B4A',
+    PATO: '#3A3A3A',
+    INCERTO: '#1f1f1f'
+  },
+  perfis_border: {
+    AGUIA: '#FFD86E',
+    GAVIAO: '#D4AF37',
+    URUBU: '#E89968',
+    PATO: '#5a5a5a',
+    INCERTO: '#444'
+  }
+};
+
+Chart.defaults.color = '#9a9a9a';
+Chart.defaults.borderColor = '#262626';
+Chart.defaults.font.family = '-apple-system,BlinkMacSystemFont,"Inter","Segoe UI",sans-serif';
+Chart.defaults.font.size = 11;
+Chart.defaults.plugins.legend.labels.color = '#EAEAEA';
+Chart.defaults.plugins.tooltip.backgroundColor = '#0a0a0a';
+Chart.defaults.plugins.tooltip.borderColor = '#D4AF37';
+Chart.defaults.plugins.tooltip.borderWidth = 1;
+Chart.defaults.plugins.tooltip.titleColor = '#FFD86E';
+Chart.defaults.plugins.tooltip.bodyColor = '#EAEAEA';
+Chart.defaults.plugins.tooltip.padding = 10;
+
+const noGrid = {grid:{color:'#1c1c1c',drawBorder:false},ticks:{color:'#9a9a9a'}};
+const noGridX = {grid:{display:false,drawBorder:false},ticks:{color:'#9a9a9a'}};
+
+// 1) HISTOGRAMA DE SCORE
+new Chart(document.getElementById('ch-hist'), {
+  type: 'bar',
+  data: {
+    labels: CD.hist_labels,
+    datasets: [{
+      label: 'Médicos',
+      data: CD.hist_data,
+      backgroundColor: CD.hist_labels.map((l,i) => i>=8 ? COLORS.gold : i>=6 ? COLORS.gold2 : i>=5 ? COLORS.amber : i>=3 ? COLORS.copper : COLORS.muted),
+      borderRadius: 4,
+      borderSkipped: false,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {legend: {display: false}},
+    scales: {y: {...noGrid, beginAtZero: true, title: {display:true,text:'qtd',color:'#6a6a6a'}}, x: {...noGridX, title:{display:true,text:'score (0-100)',color:'#6a6a6a'}}}
+  }
+});
+
+// 2) DONUT PERFIL CPP
+new Chart(document.getElementById('ch-perfil'), {
+  type: 'doughnut',
+  data: {
+    labels: CD.perfis_lbl,
+    datasets: [{
+      data: CD.perfil_count,
+      backgroundColor: CD.perfis.map(p => COLORS.perfis[p]),
+      borderColor: '#0a0a0a',
+      borderWidth: 2,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false, cutout: '60%',
+    plugins: {legend: {position: 'right', labels:{usePointStyle:true,padding:10,font:{size:11}}}}
+  }
+});
+
+// 3) BUCKETS DE PRIORIDADE (bar)
+new Chart(document.getElementById('ch-buckets'), {
+  type: 'bar',
+  data: {
+    labels: CD.buckets_lbl,
+    datasets: [{
+      data: CD.buckets_data,
+      backgroundColor: ['#3DDC84', '#D4AF37', '#F4B400', '#C97B4A', '#666'],
+      borderRadius: 4,
+      borderSkipped: false,
+    }]
+  },
+  options: {
+    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+    plugins: {legend: {display: false}},
+    scales: {x: {...noGrid, beginAtZero: true}, y: {...noGridX}}
+  }
+});
+
+// 4) VERIFICACAO
+new Chart(document.getElementById('ch-verif'), {
+  type: 'doughnut',
+  data: {
+    labels: CD.verif_ordem,
+    datasets: [{
+      data: CD.verif_data,
+      backgroundColor: ['#3DDC84','#F4B400','#E84545','#666'],
+      borderColor: '#0a0a0a', borderWidth: 2,
+    }]
+  },
+  options: {responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'right',labels:{usePointStyle:true,padding:8,font:{size:11}}}}}
+});
+
+// 5) CLINICA PROPRIA
+new Chart(document.getElementById('ch-clinica'), {
+  type: 'pie',
+  data: {
+    labels: ['Tem clínica', 'Não tem', 'Incerto'],
+    datasets: [{
+      data: CD.clinica_data,
+      backgroundColor: ['#D4AF37','#3A3A3A','#666'],
+      borderColor:'#0a0a0a', borderWidth:2
+    }]
+  },
+  options: {responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{usePointStyle:true,padding:8,font:{size:11}}}}}
+});
+
+// 6) ESTADOS TOP 10
+new Chart(document.getElementById('ch-estados'), {
+  type: 'bar',
+  data: {
+    labels: CD.estados_top.map(e => e.label),
+    datasets: [{
+      label: 'Médicos',
+      data: CD.estados_top.map(e => e.value),
+      backgroundColor: COLORS.gold,
+      borderRadius: 4, borderSkipped:false,
+    }]
+  },
+  options: {
+    indexAxis:'y',responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{x:{...noGrid,beginAtZero:true},y:{...noGridX}}
+  }
+});
+
+// 7) ESPECIALIDADES TOP 10
+new Chart(document.getElementById('ch-esp'), {
+  type: 'bar',
+  data: {
+    labels: CD.esp_top.map(e => e.label),
+    datasets: [{
+      label: 'Médicos',
+      data: CD.esp_top.map(e => e.value),
+      backgroundColor: ctx => {
+        const v = ctx.parsed?.x ?? 0;
+        if (v >= 20) return COLORS.gold;
+        if (v >= 5) return COLORS.gold2;
+        if (v >= 2) return COLORS.copper;
+        return '#5a5a5a';
+      },
+      borderRadius: 4, borderSkipped: false,
+    }]
+  },
+  options: {
+    indexAxis:'y',responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{x:{...noGrid,beginAtZero:true},y:{...noGridX}}
+  }
+});
+
+// 8) TIMELINE VENDAS
+new Chart(document.getElementById('ch-timeline'), {
+  type: 'line',
+  data: {
+    datasets: [{
+      label: 'Vendas/dia',
+      data: CD.vendas_dias,
+      borderColor: COLORS.gold,
+      backgroundColor: 'rgba(212,175,55,0.18)',
+      fill: true, tension: 0.3,
+      pointBackgroundColor: COLORS.gold3, pointRadius: 4, pointHoverRadius: 7,
+    }]
+  },
+  options: {
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{
+      x:{type:'time',time:{unit:'day',tooltipFormat:'dd/MM'},...noGridX},
+      y:{...noGrid,beginAtZero:true,ticks:{stepSize:1}}
+    }
+  }
+});
+
+// 9) STACKED PERFIL × CICLO
+new Chart(document.getElementById('ch-stack'), {
+  type: 'bar',
+  data: {
+    labels: CD.perfis_lbl,
+    datasets: CD.ciclos_ordem.map((c, i) => ({
+      label: c,
+      data: CD.perfis.map(p => CD.perfil_x_ciclo[p][i]),
+      backgroundColor: ['#FFD86E','#D4AF37','#B8860B','#C97B4A','#3A3A3A'][i],
+      borderColor:'#0a0a0a', borderWidth:1,
+    }))
+  },
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:'bottom',labels:{usePointStyle:true,padding:10,font:{size:11}}}},
+    scales:{x:{stacked:true,...noGridX},y:{stacked:true,...noGrid,beginAtZero:true}}
+  }
+});
+
+// 10) RADAR — score breakdown medio por perfil
+new Chart(document.getElementById('ch-radar'), {
+  type: 'radar',
+  data: {
+    labels: ['Estrutura', 'Engajamento', 'Fome de crescimento', 'Capacidade pagar'],
+    datasets: CD.perfis.filter(p => p !== 'INCERTO').map(p => {
+      const bd = CD.breakdown_por_perfil[p];
+      return {
+        label: {AGUIA:'Águia',GAVIAO:'Gavião',URUBU:'Urubu',PATO:'Pato'}[p],
+        data: [bd.estrutura||0, bd.engajamento||0, bd.fome_crescimento||0, bd.capacidade_pagar||0],
+        backgroundColor: COLORS.perfis[p] + '33',
+        borderColor: COLORS.perfis[p],
+        borderWidth: 2,
+        pointBackgroundColor: COLORS.perfis_border[p],
+        pointRadius: 4,
+      };
+    })
+  },
+  options: {
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:'bottom',labels:{usePointStyle:true,padding:10,font:{size:11}}}},
+    scales:{r:{angleLines:{color:'#262626'},grid:{color:'#1c1c1c'},pointLabels:{color:'#9a9a9a',font:{size:11}},ticks:{color:'#5a5a5a',backdropColor:'transparent',stepSize:10},suggestedMax:40}}
+  }
+});
+
+// 11) PAGAMENTO
+new Chart(document.getElementById('ch-pgto'), {
+  type: 'doughnut',
+  data: {
+    labels: CD.pagamento.map(x => x.label),
+    datasets: [{
+      data: CD.pagamento.map(x => x.value),
+      backgroundColor: ['#D4AF37','#C97B4A','#3A3A3A','#666'],
+      borderColor:'#0a0a0a', borderWidth:2,
+    }]
+  },
+  options:{responsive:true,maintainAspectRatio:false,cutout:'60%',plugins:{legend:{position:'right',labels:{usePointStyle:true,padding:8,font:{size:11}}}}}
+});
+
+// 12) PARCELAS
+new Chart(document.getElementById('ch-parcelas'), {
+  type: 'bar',
+  data: {
+    labels: CD.parcelas.map(p => p.label),
+    datasets: [{
+      data: CD.parcelas.map(p => p.value),
+      backgroundColor: CD.parcelas.map(p => p.label === '12x' ? COLORS.red : p.label === '1x' ? COLORS.gold : COLORS.copper),
+      borderRadius: 4, borderSkipped: false,
+    }]
+  },
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{x:{...noGridX},y:{...noGrid,beginAtZero:true,ticks:{stepSize:5}}}
+  }
+});
+
+// 13) SCATTER score x verificacao
+const verifLabels = ['Incerto', 'Baixa', 'Média', 'Alta'];
+new Chart(document.getElementById('ch-scatter'), {
+  type: 'scatter',
+  data: {
+    datasets: CD.perfis.map(p => ({
+      label: {AGUIA:'Águia',GAVIAO:'Gavião',URUBU:'Urubu',PATO:'Pato',INCERTO:'Incerto'}[p],
+      data: CD.scatter.filter(s => s.perfil === p).map(s => ({
+        // jitter pra não sobrepor
+        x: s.x + (Math.random()-0.5)*0.5,
+        y: s.y,
+        label: s.label,
+        id: s.id
+      })),
+      backgroundColor: COLORS.perfis[p],
+      borderColor: COLORS.perfis_border[p],
+      borderWidth: 1,
+      pointRadius: 6, pointHoverRadius: 10,
+    }))
+  },
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{
+      legend:{position:'bottom',labels:{usePointStyle:true,padding:10,font:{size:11}}},
+      tooltip:{callbacks:{label:(ctx)=>`#${ctx.raw.id} ${ctx.raw.label} · ${verifLabels[Math.round(ctx.raw.x)]} · score ${Math.round(ctx.raw.y)}`}}
+    },
+    scales:{
+      x:{...noGridX,min:-0.5,max:3.5,ticks:{stepSize:1,callback:(v)=>verifLabels[v]||''},title:{display:true,text:'Confiança de identidade',color:'#6a6a6a'}},
+      y:{...noGrid,beginAtZero:true,max:100,title:{display:true,text:'Score',color:'#6a6a6a'}}
+    }
+  }
+});
+
 </script>
 
 </body>
