@@ -206,6 +206,73 @@ section{padding:48px 0 12px}
   .block dt{padding-top:8px}
 }
 
+/* QUICK SEARCH (sticky topo) */
+.quick-search{
+  position:sticky;top:0;z-index:30;
+  background:linear-gradient(180deg,rgba(10,10,10,0.97) 0%,rgba(10,10,10,0.95) 90%,rgba(10,10,10,0.7) 100%);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  padding:14px 24px;
+  border-bottom:2px solid var(--gold-2);
+  box-shadow:0 4px 20px rgba(0,0,0,0.5);
+}
+.search-wrap{max-width:1320px;margin:0 auto;position:relative}
+.search-icon{
+  position:absolute;left:18px;top:50%;transform:translateY(-50%);
+  color:var(--gold-3);font-size:22px;pointer-events:none;z-index:2;
+}
+#search-input{
+  width:100%;padding:14px 130px 14px 50px;font-size:15px;font-weight:500;
+  background:#161616;color:var(--txt);
+  border:2px solid var(--line-2);border-radius:12px;
+  outline:none;transition:border-color .2s,background .2s;
+  font-family:inherit;
+}
+#search-input::placeholder{color:var(--txt-3);font-weight:400}
+#search-input:focus{border-color:var(--gold);background:#1a1a1a;box-shadow:0 0 0 3px rgba(212,175,55,0.18)}
+.search-hint{
+  position:absolute;right:16px;top:50%;transform:translateY(-50%);
+  font-size:11px;color:var(--txt-3);letter-spacing:0.5px;pointer-events:none;
+}
+.search-results{
+  position:absolute;top:calc(100% + 8px);left:0;right:0;
+  background:#0d0d0d;border:1px solid var(--gold-2);border-radius:12px;
+  max-height:520px;overflow-y:auto;
+  display:none;
+  box-shadow:0 16px 48px rgba(0,0,0,0.7);
+}
+.search-results.show{display:block}
+.search-item{
+  display:flex;align-items:center;gap:14px;
+  padding:12px 18px;border-bottom:1px solid var(--line);
+  text-decoration:none;color:var(--txt);
+  transition:background .15s;
+}
+.search-item:last-child{border-bottom:none}
+.search-item:hover,.search-item.active{background:#1c1c1c;color:var(--txt)}
+.search-item .search-id{
+  color:var(--gold-3);font-weight:800;font-family:ui-monospace,monospace;
+  font-size:12px;flex-shrink:0;width:32px;
+}
+.search-item .search-info{flex:1;min-width:0}
+.search-item .search-nome{font-weight:700;font-size:14px;display:block}
+.search-item .search-meta{font-size:11px;color:var(--txt-3);display:block;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.search-item .search-score{
+  font-size:11px;font-weight:700;color:var(--gold-3);
+  background:#1a1a1a;padding:4px 10px;border-radius:6px;flex-shrink:0;
+}
+.search-no{padding:24px;text-align:center;color:var(--txt-3);font-style:italic;font-size:13px}
+
+/* CARD highlight when navigated */
+.card.highlighted{
+  border-color:var(--gold)!important;box-shadow:0 0 0 3px rgba(212,175,55,0.3);
+  animation:pulse 1.6s ease-out;
+}
+@keyframes pulse{
+  0%{box-shadow:0 0 0 0 rgba(212,175,55,0.6)}
+  70%{box-shadow:0 0 0 14px rgba(212,175,55,0)}
+  100%{box-shadow:0 0 0 0 rgba(212,175,55,0)}
+}
+
 /* CHARTS */
 .charts-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px;margin-bottom:30px}
 .chart-card{
@@ -255,6 +322,15 @@ section{padding:48px 0 12px}
     </div>
   </div>
 </header>
+
+<div class="quick-search">
+  <div class="search-wrap">
+    <div class="search-icon">⌕</div>
+    <input type="search" id="search-input" placeholder="Buscar pelo nome do médico, cidade, especialidade, perfil… (use durante a live)" autocomplete="off">
+    <span class="search-hint">↵ vai pra ficha · esc fecha</span>
+    <div class="search-results" id="search-results" role="listbox"></div>
+  </div>
+</div>
 
 <div class="actions-bar">
   <div class="breadcrumb">Dossiê CPP · Maio 2026</div>
@@ -8557,6 +8633,113 @@ section{padding:48px 0 12px}
       c.parentElement.style.display = (okPerfil && okVerif && okScore) ? '' : 'none';
     });
   }
+})();
+
+// ====================== QUICK SEARCH ======================
+(function(){
+  const input = document.getElementById('search-input');
+  const results = document.getElementById('search-results');
+  if (!input || !results) return;
+
+  const cards = Array.from(document.querySelectorAll('.card'));
+  const idx = cards.map(c => {
+    const wrapper = c.parentElement;
+    const id = c.querySelector('.card-id')?.textContent?.trim() || '';
+    const nome = c.querySelector('.card-title h3')?.childNodes[0]?.textContent?.trim() || '';
+    const sub = c.querySelector('.card-sub')?.textContent?.replace(/\s+/g,' ').trim() || '';
+    const score = c.querySelector('.score-num')?.textContent?.trim() || '';
+    const haystack = (c.textContent || '').toLowerCase();
+    return {wrapper, id, nome, sub, score, haystack, perfil:c.dataset.perfil, estado:c.dataset.estado};
+  });
+
+  let activeIdx = -1;
+
+  function render(matches){
+    if (matches.length === 0){
+      results.innerHTML = '<div class="search-no">Nenhum resultado. Tente outro termo (nome, especialidade, cidade).</div>';
+    } else {
+      results.innerHTML = matches.map((m, i) =>
+        `<a class="search-item" data-target="${m.wrapper.id}" data-i="${i}">
+          <span class="search-id">${m.id}</span>
+          <span class="search-info">
+            <span class="search-nome">${m.nome}</span>
+            <span class="search-meta">${m.sub.slice(0, 110)}</span>
+          </span>
+          <span class="search-score">${m.score}</span>
+        </a>`
+      ).join('');
+    }
+    results.classList.add('show');
+    activeIdx = -1;
+  }
+
+  function search(q){
+    if (!q || q.length < 2) {
+      results.classList.remove('show');
+      return;
+    }
+    const terms = q.toLowerCase().split(/\s+/).filter(Boolean);
+    const matches = idx
+      .map(item => ({item, score: terms.every(t => item.haystack.includes(t)) ? terms.reduce((s,t)=>s + (item.nome.toLowerCase().includes(t)?5:0) + (item.sub.toLowerCase().includes(t)?2:0) + (item.haystack.includes(t)?1:0), 0) : 0}))
+      .filter(m => m.score > 0)
+      .sort((a,b) => b.score - a.score)
+      .slice(0, 14)
+      .map(m => m.item);
+    render(matches);
+  }
+
+  input.addEventListener('input', e => search(e.target.value));
+  input.addEventListener('keydown', e => {
+    const items = results.querySelectorAll('.search-item');
+    if (e.key === 'Escape') {
+      input.value=''; results.classList.remove('show'); input.blur(); return;
+    }
+    if (e.key === 'Enter' && activeIdx >= 0 && items[activeIdx]) {
+      items[activeIdx].click(); e.preventDefault(); return;
+    }
+    if (e.key === 'Enter' && items.length > 0) {
+      items[0].click(); e.preventDefault(); return;
+    }
+    if (e.key === 'ArrowDown') {
+      activeIdx = Math.min(activeIdx + 1, items.length - 1);
+      items.forEach((x,i)=>x.classList.toggle('active', i===activeIdx));
+      items[activeIdx]?.scrollIntoView({block:'nearest'}); e.preventDefault();
+    }
+    if (e.key === 'ArrowUp') {
+      activeIdx = Math.max(activeIdx - 1, 0);
+      items.forEach((x,i)=>x.classList.toggle('active', i===activeIdx));
+      items[activeIdx]?.scrollIntoView({block:'nearest'}); e.preventDefault();
+    }
+  });
+
+  results.addEventListener('click', e => {
+    const item = e.target.closest('.search-item');
+    if (!item) return;
+    e.preventDefault();
+    const targetId = item.dataset.target;
+    const target = document.getElementById(targetId);
+    if (!target) return;
+    target.scrollIntoView({behavior:'smooth', block:'start'});
+    const card = target.querySelector('.card');
+    document.querySelectorAll('.card.highlighted').forEach(x => x.classList.remove('highlighted'));
+    if (card) {
+      card.classList.add('highlighted');
+      setTimeout(() => card.classList.remove('highlighted'), 2400);
+    }
+    results.classList.remove('show');
+    input.value = '';
+  });
+
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.search-wrap')) results.classList.remove('show');
+  });
+
+  // atalho global "/" foca a busca
+  document.addEventListener('keydown', e => {
+    if (e.key === '/' && document.activeElement !== input) {
+      e.preventDefault(); input.focus();
+    }
+  });
 })();
 
 // ====================== CHARTS ======================
